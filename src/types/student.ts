@@ -3,4 +3,5 @@ export interface Student {
   name: string;
   major: string;
   semester: number;
+  email?: string;
 }
