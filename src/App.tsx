@@ -1,51 +1,99 @@
 import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import StudentItem from "./components/StudentItem";
 import type { Student } from "./types/student";
+
+interface FormValues {
+  name: string;
+  major: string;
+  semester: string;
+}
 
 const dataAwal: Student[] = [
   { id: 1, name: "Budi", major: "Hukum", semester: 3 },
   { id: 2, name: "Sari", major: "Sastra", semester: 5 },
-  { id: 3, name: "Andi", major: "Informatika", semester: 7 },
 ];
 
 function App() {
   const [students, setStudents] = useState<Student[]>(dataAwal);
-  const [search, setSearch] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState<FormValues>({
+    name: "",
+    major: "",
+    semester: "",
+  });
+  const [error, setError] = useState("");
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>): void {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  }
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>): void {
+    e.preventDefault();
+
+    if (
+      form.name.trim() === "" ||
+      form.major.trim() === "" ||
+      form.semester.trim() === ""
+    ) {
+      setError("form tidak ada yang boleh kosong");
+      return;
+    }
+
+    const newStudent: Student = {
+      id: Date.now(),
+      name: form.name.trim(),
+      major: form.major.trim(),
+      semester: Number(form.semester),
+    };
+
+    setStudents([...students, newStudent]);
+    setForm({ name: "", major: "", semester: "" });
+    setError("");
+  }
 
   function handleDelete(id: number): void {
     setStudents(students.filter((student) => student.id !== id));
-    if (id === editingId) {
-      setEditingId(null);
-    }
   }
 
   function handleEdit(student: Student): void {
-    setEditingId(student.id);
+    console.log("edit", student.name);
   }
-
-  //cari satu mahasiswa yang id-nya sama dengan editingId
-  const editingStudent = students.find((student) => student.id === editingId);
-
-  const filteredStudents = students.filter((student) =>
-    student.name.toLowerCase().includes(search.toLowerCase()),
-  );
 
   return (
     <div>
       <h1>Student Directory TS</h1>
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cari nama..."
-      />
+      <form onSubmit={handleSubmit}>
+        <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          placeholder="Nama"
+        />
+        <br />
+        <input
+          name="major"
+          value={form.major}
+          onChange={handleChange}
+          placeholder="Jurusan"
+        />
+        <br />
+        <input
+          name="semester"
+          type="number"
+          value={form.semester}
+          onChange={handleChange}
+          placeholder="Semester"
+        />
+        <br />
+        <button type="submit">Tambah</button>
+      </form>
 
-      {/* “kalau editingStudent ada isinya, tampilkan ‘Sedang mengedit’ plus namanya. */}
-      {editingStudent && <p>Sedang mengedit: {editingStudent.name}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       <ul>
-        {filteredStudents.map((student) => (
+        {students.map((student) => (
           <StudentItem
             key={student.id}
             student={student}
@@ -57,4 +105,5 @@ function App() {
     </div>
   );
 }
+
 export default App;
