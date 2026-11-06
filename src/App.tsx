@@ -1,108 +1,70 @@
-import { useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
-import StudentItem from "./components/StudentItem";
-import type { Student } from "./types/student";
+import { useEffect, useState } from "react";
 
-interface FormValues {
+interface Company {
   name: string;
-  major: string;
-  semester: string;
 }
 
-const dataAwal: Student[] = [
-  { id: 1, name: "Budi", major: "Hukum", semester: 3 },
-  { id: 2, name: "Sari", major: "Sastra", semester: 5 },
-];
+interface Address {
+  street: string;
+  city: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  company: Company;
+  address: Address;
+}
 
 function App() {
-  const [students, setStudents] = useState<Student[]>(dataAwal);
-  const [form, setForm] = useState<FormValues>({
-    name: "",
-    major: "",
-    semester: "",
-  });
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  function handleChange(
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ): void {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  }
+  useEffect(() => {
+    async function ambilData(): Promise<void> {
+      try {
+        const response = await fetch(
+          "https://jsonplaceholder.typicode.com/users",
+        );
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>): void {
-    e.preventDefault();
+        if (!response.ok) {
+          throw new Error("Server membalas dengan error");
+        }
 
-    if (
-      form.name.trim() === "" ||
-      form.major.trim() === "" ||
-      form.semester.trim() === ""
-    ) {
-      setError("form tidak ada yang boleh kosong");
-      return;
+        const data: User[] = await response.json();
+        setUsers(data);
+        console.log(data);
+      } catch (err) {
+        console.error(err);
+        setError("Data gagal dimuat, coba lagi nanti");
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const newStudent: Student = {
-      id: Date.now(),
-      name: form.name.trim(),
-      major: form.major.trim(),
-      semester: Number(form.semester),
-    };
+    ambilData();
+  }, []);
 
-    setStudents([...students, newStudent]);
-    setForm({ name: "", major: "", semester: "" });
-    setError("");
+  if (loading) {
+    return <p>Memuat data...</p>;
   }
 
-  function handleDelete(id: number): void {
-    setStudents(students.filter((student) => student.id !== id));
-  }
-
-  function handleEdit(student: Student): void {
-    console.log("edit", student.name);
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
   }
 
   return (
     <div>
-      <h1>Student Directory TS</h1>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Nama"
-        />
-        <br /> <br />
-        <select name="major" value={form.major} onChange={handleChange}>
-          <option value="">Pilih Jurusan</option>
-          <option value="Hukum">Hukum</option>
-          <option value="Sastra">Sastra</option>
-          <option value="Informatika">Infromatika</option>
-        </select>
-        <br />
-        <br />
-        <input
-          name="semester"
-          type="number"
-          value={form.semester}
-          onChange={handleChange}
-          placeholder="Semester"
-        />
-        <br /> <br />
-        <button type="submit">Tambah</button>
-      </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
+      <h1>Daftar Pengguna</h1>
       <ul>
-        {students.map((student) => (
-          <StudentItem
-            key={student.id}
-            student={student}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-          />
+        {users.map((user) => (
+          <li key={user.id}>
+            {user.name} - {user.email} - {user.phone} ({user.company.name}) (
+            {user.address.street}) ({user.address.city})
+          </li>
         ))}
       </ul>
     </div>
