@@ -23,7 +23,9 @@ function App() {
   });
   const [error, setError] = useState("");
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>): void {
+  function handleChange(
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ): void {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   }
@@ -71,13 +73,14 @@ function App() {
           onChange={handleChange}
           placeholder="Nama"
         />
+        <br /> <br />
+        <select name="major" value={form.major} onChange={handleChange}>
+          <option value="">Pilih Jurusan</option>
+          <option value="Hukum">Hukum</option>
+          <option value="Sastra">Sastra</option>
+          <option value="Informatika">Infromatika</option>
+        </select>
         <br />
-        <input
-          name="major"
-          value={form.major}
-          onChange={handleChange}
-          placeholder="Jurusan"
-        />
         <br />
         <input
           name="semester"
@@ -86,7 +89,7 @@ function App() {
           onChange={handleChange}
           placeholder="Semester"
         />
-        <br />
+        <br /> <br />
         <button type="submit">Tambah</button>
       </form>
 
