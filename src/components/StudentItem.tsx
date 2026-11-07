@@ -17,7 +17,7 @@ function StudentItem({ student, onDelete, onEdit }: StudentItemProps) {
       <br />
       Semester: {student.semester}
       <br />
-      email: {student.email}
+      {student.email && <p>Email: {student.email}</p>}
       <br />
       <button onClick={() => onDelete(student.id)}>Hapus</button>
       <button onClick={() => onEdit(student)}>Edit</button>
